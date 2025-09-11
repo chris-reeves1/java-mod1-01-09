@@ -17,8 +17,8 @@ import com.google.gson.Gson;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        Path path = Path.of("final.json");
-        FileJsonHelper.writeJson(path, new Person("a", 1));
+        // Path path = Path.of("final.json");
+        // FileJsonHelper.writeJson(path, new Person("a", 1));
 
         //System.out.println(new File("example.txt").getAbsolutePath());
 
@@ -73,31 +73,52 @@ public class Main {
         //     // deserealize - make obj 
         //     Person p1 = gson.fromJson(load, Person.class);
         //     System.out.println(p1.getName() + " " + p1.getAge());
+        
+        Path path = Path.of("adapter.txt");
+        Files.writeString(path, "TEST");
 
+        TextReader reader = new BytesToTextAdapter();
+        System.out.println(reader.read(path)); 
     }
 }
 
-
-class Person{
-    String name;
-    int age;
-    Person(String name, int age){
-        this.name = name;
-        this.age = age;  
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public int getAge() {
-        return age;
-    }
-    public void setAge(int age) {
-        this.age = age;
+// Assume cant be changed. 
+class LegacyFileLoader {
+    public byte[] loadBytes(Path path) throws Exception {
+        return Files.readAllBytes(path);
     }
 }
+
+interface TextReader { String read(Path path) throws Exception; }
+
+class BytesToTextAdapter implements TextReader {
+    private final LegacyFileLoader loader = new LegacyFileLoader();
+    @Override
+    public String read(Path path) throws Exception {
+        return new String(loader.loadBytes(path), StandardCharsets.UTF_8);
+    }
+}
+
+// class Person{
+//     String name;
+//     int age;
+//     Person(String name, int age){
+//         this.name = name;
+//         this.age = age;  
+//     }
+//     public String getName() {
+//         return name;
+//     }
+//     public void setName(String name) {
+//         this.name = name;
+//     }
+//     public int getAge() {
+//         return age;
+//     }
+//     public void setAge(int age) {
+//         this.age = age;
+//     }
+// }
 
 
 /*
