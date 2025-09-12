@@ -1,0 +1,65 @@
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+    BrokenCounter counter = new BrokenCounter(); 
+    int threads = 8, repeats = 50_000;
+    List<Thread> list = new ArrayList<>();
+    for (int i = 0; i < threads; i++) {
+        Thread t = new Thread(() -> {
+            for (int r = 0; r < repeats; r++) counter.increment(); 
+        });
+        list.add(t);
+        t.start();
+    }
+    for (Thread t : list) t.join();
+    System.out.println("Expected: " + (threads * repeats) + " | Actual (broken): " + counter.value());
+
+    }}
+    class BrokenCounter {
+        private int count = 0;
+        void increment() { count = count + 1; } 
+        int value() { return count; }
+    }
+
+--------------------------------------------------------------------------------------------------
+
+public class Main {
+public static void main(String[] args) throws InterruptedException {
+    
+System.out.println("\n-- Part 3: Race condition demo (broken counter) --");
+
+    BrokenCounter counter = new BrokenCounter(); // shared mutable state
+    int threads = 8, repeats = 50_000;
+    List<Thread> list = new ArrayList<>();
+    for (int i = 0; i < threads; i++) {
+        Thread t = new Thread(() -> {
+            for (int r = 0; r < repeats; r++) counter.increment(); // not synchronized
+        });
+        list.add(t);
+        t.start();
+    }
+    for (Thread t : list) t.join();
+    System.out.println("Expected: " + (threads * repeats) + " | Actual (broken): " + counter.value());
+
+        SyncCounter safeCounter = new SyncCounter();
+threads = 8; list.clear();
+for (int i = 0; i < threads; i++) {
+    Thread t = new Thread(() -> {
+        for (int r = 0; r < repeats; r++) safeCounter.increment();
+    });
+    list.add(t);
+    t.start();
+}
+for (Thread t : list) t.join();
+System.out.println("Expected: " + (threads * repeats) + " | Actual (sync): " + safeCounter.value());
+    }}
+    class BrokenCounter {
+        private int count = 0;
+        void increment() { count = count + 1; } // NOT atomic
+        int value() { return count; }
+    }
+
+class SyncCounter {
+    private int count = 0;
+    synchronized void increment() { count = count + 1; } // critical section
+    synchronized int value() { return count; }
+}
